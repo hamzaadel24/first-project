@@ -1,0 +1,219 @@
+/*====================================================
+    Cinema Database Project
+    Author: Hamza Adel
+    Description:
+    Cinema Reservation Management System
+====================================================*/
+
+-- Create Database
+CREATE DATABASE Cinema;
+GO
+
+USE Cinema;
+GO
+
+/*====================================================
+    Customers Table
+====================================================*/
+CREATE TABLE Customers (
+    customer_id INT PRIMARY KEY,
+    name NVARCHAR(50) NOT NULL,
+    phone VARCHAR(15) UNIQUE
+);
+
+
+
+/*====================================================
+    Movies Table
+====================================================*/
+CREATE TABLE Movies (
+    movie_id INT PRIMARY KEY,
+    title NVARCHAR(100) NOT NULL,
+    duration INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL
+);
+
+
+
+/*====================================================
+    Halls Table
+====================================================*/
+CREATE TABLE Halls (
+    hall_id INT PRIMARY KEY,
+    hall_name NVARCHAR(50) NOT NULL,
+    capacity INT NOT NULL
+);
+
+
+
+/*====================================================
+    Movie Tickets Table
+====================================================*/
+CREATE TABLE MovieTicket (
+    MovieTicket_id INT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    hall_id INT NOT NULL,
+    seats INT NOT NULL,
+    reservation_date DATE NOT NULL,
+
+    FOREIGN KEY (customer_id)
+        REFERENCES Customers(customer_id),
+
+    FOREIGN KEY (movie_id)
+        REFERENCES Movies(movie_id),
+
+    FOREIGN KEY (hall_id)
+        REFERENCES Halls(hall_id)
+);
+
+
+
+/*====================================================
+    Insert Customers
+====================================================*/
+INSERT INTO Customers (customer_id, name, phone)
+VALUES
+(1, 'Ahmed', '01012345678'),
+(2, 'Sara', '01123456789'),
+(3, 'Omar', '01234567890'),
+(4, 'Mona', '01098765432'),
+(5, 'Ali', '01199887766');
+
+
+
+/*====================================================
+    Insert Movies
+====================================================*/
+INSERT INTO Movies (movie_id, title, duration, price)
+VALUES
+(1, 'Avatar', 180, 120.00),
+(2, 'Interstellar', 170, 100.00),
+(3, 'Joker', 140, 80.00),
+(4, 'Inception', 150, 110.00),
+(5, 'Titanic', 195, 90.00);
+
+
+
+/*====================================================
+    Insert Halls
+====================================================*/
+INSERT INTO Halls (hall_id, hall_name, capacity)
+VALUES
+(1, 'Hall A', 100),
+(2, 'VIP Hall', 40),
+(3, 'Hall B', 80),
+(4, 'Hall C', 120),
+(5, 'Hall D', 60);
+
+
+
+/*====================================================
+    Insert Reservations
+====================================================*/
+INSERT INTO MovieTicket
+(MovieTicket_id, customer_id, movie_id, hall_id, seats, reservation_date)
+VALUES
+(1, 1, 1, 1, 2, '2026-05-11'),
+(2, 2, 2, 2, 3, '2026-05-11'),
+(3, 3, 3, 3, 1, '2026-05-12'),
+(4, 4, 4, 4, 4, '2026-05-12'),
+(5, 5, 5, 5, 2, '2026-05-13');
+
+
+
+/*====================================================
+    Reservation Details Report
+====================================================*/
+SELECT
+    C.name AS Customer_Name,
+    M.title AS Movie_Title,
+    H.hall_name AS Hall_Name,
+    MT.seats,
+    MT.reservation_date
+FROM MovieTicket MT
+JOIN Customers C
+    ON MT.customer_id = C.customer_id
+JOIN Movies M
+    ON MT.movie_id = M.movie_id
+JOIN Halls H
+    ON MT.hall_id = H.hall_id;
+
+
+
+/*====================================================
+    Movie Statistics
+====================================================*/
+SELECT
+    M.title,
+    COUNT(MT.MovieTicket_id) AS Total_Reservations,
+    SUM(MT.seats) AS Total_Seats,
+    AVG(MT.seats) AS Average_Seats,
+    MAX(MT.seats) AS Maximum_Seats,
+    MIN(MT.seats) AS Minimum_Seats
+FROM MovieTicket MT
+JOIN Movies M
+    ON MT.movie_id = M.movie_id
+GROUP BY M.title
+ORDER BY M.title;
+
+
+
+/*====================================================
+    Total Reserved Seats Per Customer
+====================================================*/
+SELECT
+    C.name,
+    SUM(MT.seats) AS Total_Seats
+FROM MovieTicket MT
+JOIN Customers C
+    ON MT.customer_id = C.customer_id
+GROUP BY C.name;
+
+
+
+/*====================================================
+    Most Expensive Movie
+====================================================*/
+SELECT TOP 1 *
+FROM Movies
+ORDER BY price DESC;
+
+
+
+/*====================================================
+    Cheapest Movie
+====================================================*/
+SELECT TOP 1 *
+FROM Movies
+ORDER BY price ASC;
+
+
+
+/*====================================================
+    Reservation Cost Report
+====================================================*/
+SELECT
+    C.name,
+    M.title,
+    H.hall_name,
+    MT.seats,
+    M.price,
+    (MT.seats * M.price) AS Total_Price,
+    MT.reservation_date
+FROM MovieTicket MT
+JOIN Customers C
+    ON MT.customer_id = C.customer_id
+JOIN Movies M
+    ON MT.movie_id = M.movie_id
+JOIN Halls H
+    ON MT.hall_id = H.hall_id;
+
+
+
+/*====================================================
+    Movies Longer Than 160 Minutes
+====================================================*/
+SELECT *
+FROM Movies
+WHERE duration > 160;
